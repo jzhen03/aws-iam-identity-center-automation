@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "permissionSets": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "permissionSetName": {
+              "type": "string"
+            },
+            "managedPolicies": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "customPolicy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "permissionSetName",
+            "managedPolicies",
+            "customPolicy"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "permissionSets"
+  ]
+}

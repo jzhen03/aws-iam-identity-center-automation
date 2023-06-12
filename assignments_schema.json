@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "assignments": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "permissionSet": {
+              "type": "string"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "target": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "permissionSet",
+            "groupName",
+            "target"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "assignments"
+  ]
+}
