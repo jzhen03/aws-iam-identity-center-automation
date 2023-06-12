@@ -22,7 +22,7 @@ def build_parser():
     sso_parser = subparsers.add_parser('id-center', help='AWS IAM Identity Center stack')
     sso_parser.add_argument("--permsets", dest="permsets", help="File containing permission sets")
     sso_parser.add_argument("--assignments", dest="assignments", help="File containing assignments")
-    sso_parser.add_argument("--mgmtacct", help="AWS Organizations Management Account")
+    # sso_parser.add_argument("--mgmtacct", help="AWS Organizations Management Account")
     sso_parser.add_argument("-p", "--profile", dest="profile", required=True, help="Your AWS profile")
     sso_parser.add_argument("-r", "--region", dest="region", required=True, help="AWS Region")
     sso_parser.add_argument("-d", "--deploy", action="store_true", default=False, required=False, help="Deploy changes")
@@ -83,8 +83,9 @@ if __name__ == "__main__":
                 os.makedirs(output_dir)
 
             synth_cmd = "cdk synth -j --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + \
-                        args.assignments + " -c accountID=" + args.mgmtacct + " -c region=" + args.region + \
+                        args.assignments +  " -c region=" + args.region + \
                         " -c profile=" + args.profile + " --profile " + args.profile + " > " + sso_stack
+            # " -c accountID=" + args.mgmtacct +
 
             sso_response = subprocess.run(synth_cmd, shell=True)
 
@@ -95,12 +96,12 @@ if __name__ == "__main__":
 
             if args.deploy:
                 sso_deploy_cmd = "cdk deploy --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + \
-                                 args.assignments + " -c accountID=" + args.mgmtacct + " -c region=" + args.region + \
+                                 args.assignments +  " -c region=" + args.region + \
                                  " -c profile=" + args.profile + " --profile " + args.profile
                 sso_deploy_resp = subprocess.run(sso_deploy_cmd, shell=True)
 
         if args.permsets and args.assignments and args.destroy:
             cmd = "cdk destroy --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + args.assignments \
-                  + " -c accountID=" + args.mgmtacct + " -c region=" + args.region + " -c profile=" + args.profile \
+                  +  " -c region=" + args.region + " -c profile=" + args.profile \
                   + " --profile " + args.profile
             sso_response = subprocess.run(cmd, shell=True)
