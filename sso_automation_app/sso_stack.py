@@ -122,28 +122,28 @@ class AWSSSOStack(Stack):
 
         perm_sets = {}
         index = 0
-        # for perm_name in self.permnames:
-        #     new_perm_set = sso.CfnPermissionSet(self, perm_name, instance_arn=self.ssoinstancearn, name=perm_name)
+        for perm_name in self.permnames:
+            new_perm_set = sso.CfnPermissionSet(self, perm_name, instance_arn=self.ssoinstancearn, name=perm_name)
             
-        #     if self.custompolicies[index]:
-        #         with open('./inline_policies/' + self.custompolicies[index], 'r') as f:
-        #             check = f.read()
-        #             try:
-        #                 custom_policy_contents = json.loads(check)
-        #             except ValueError as e:
-        #                 logger.debug(
-        #                     f"Inline Policy {self.custompolicies[index]} is not in a valid JSON format. Error {e}")
+            if self.custompolicies[index]:
+                with open('./inline_policies/' + self.custompolicies[index], 'r') as f:
+                    check = f.read()
+                    try:
+                        custom_policy_contents = json.loads(check)
+                    except ValueError as e:
+                        logger.debug(
+                            f"Inline Policy {self.custompolicies[index]} is not in a valid JSON format. Error {e}")
                 
-        #         new_perm_set.inline_policy = custom_policy_contents
+                new_perm_set.inline_policy = custom_policy_contents
 
-        #     if isinstance(self.managedpolicies[index], list) and self.managedpolicies[index] != "":
-        #         new_perm_set.managed_policies = self.managedpolicies[index]
-        #     elif self.managedpolicies[index] != "":
-        #         new_perm_set.managed_policies = [self.managedpolicies[index]]
+            if isinstance(self.managedpolicies[index], list) and self.managedpolicies[index] != "":
+                new_perm_set.managed_policies = self.managedpolicies[index]
+            elif self.managedpolicies[index] != "":
+                new_perm_set.managed_policies = [self.managedpolicies[index]]
 
-        #     self.permset = new_perm_set
-        #     perm_sets[perm_name] = self.permset.attr_permission_set_arn
-        #     index += 1
+            self.permset = new_perm_set
+            perm_sets[perm_name] = self.permset.attr_permission_set_arn
+            index += 1
         # Get default permission sets
         try:
             list_paginator = self.sso_session.get_paginator('list_permission_sets')
@@ -163,27 +163,27 @@ class AWSSSOStack(Stack):
         self.allocated = get_assign(ssoassigns, profile, self.ssoidstore)
         logger.debug(f"{self.allocated}")
         count = 1
-        # for item in self.allocated:
-        #     logger.debug(f"item: {item}")
+        for item in self.allocated:
+            logger.debug(f"item: {item}")
 
-        #     # if item[0] is empty it's likely an invalid sso group name
-        #     if len(item[0]) <= 0:
-        #         logger.warning("Please check the SSO group names in your assignments file")
+            # if item[0] is empty it's likely an invalid sso group name
+            if len(item[0]) <= 0:
+                logger.warning("Please check the SSO group names in your assignments file")
 
-        #     for acct_id in item[1]:
-        #         logger.debug(f"acct_id: {acct_id}")
-        #         for k in item[0].keys():
-        #             grp_name = k
-        #         for v in item[0].values():
-        #             principal_id = v
+            for acct_id in item[1]:
+                logger.debug(f"acct_id: {acct_id}")
+                for k in item[0].keys():
+                    grp_name = k
+                for v in item[0].values():
+                    principal_id = v
 
-        #         self.assign = sso.CfnAssignment(
-        #             self, grp_name + "Assignment" + acct_id,
-        #             instance_arn=self.ssoinstancearn,
-        #             permission_set_arn=self.permission_set_arns[item[2]],
-        #             principal_id=principal_id,
-        #             principal_type="GROUP",
-        #             target_id=acct_id,
-        #             target_type="AWS_ACCOUNT"
-        #         )
-        #         count += 1
+                self.assign = sso.CfnAssignment(
+                    self, grp_name + "Assignment" + acct_id,
+                    instance_arn=self.ssoinstancearn,
+                    permission_set_arn=self.permission_set_arns[item[2]],
+                    principal_id=principal_id,
+                    principal_type="GROUP",
+                    target_id=acct_id,
+                    target_type="AWS_ACCOUNT"
+                )
+                count += 1
