@@ -40,6 +40,7 @@ def get_permission_sets(permission_sets_file):
     managed_policy_list = []
     permission_set_name = []
     custom_policy_list = []
+    description = []
     with open(permission_sets_file, "r") as perm_file:
         permission_sets = json.load(perm_file)
 
@@ -49,8 +50,9 @@ def get_permission_sets(permission_sets_file):
             permission_set_name.append(permset["permissionSetName"])
             managed_policy_list.append(permset["managedPolicies"])
             custom_policy_list.append(permset["customPolicy"])
+            description.append(permset["description"])
 
-    return permission_set_name, managed_policy_list, custom_policy_list
+    return permission_set_name, managed_policy_list, custom_policy_list, description
 
 
 def list_sso_instances(sso_session):
@@ -115,7 +117,7 @@ class AWSSSOStack(Stack):
                  env: Environment, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.permnames, self.managedpolicies, self.custompolicies = get_permission_sets(ssopermsets)
+        self.permnames, self.managedpolicies, self.custompolicies, self.description = get_permission_sets(ssopermsets)
         self.session = boto3.Session(profile_name=profile)
         self.sso_session = self.session.client('sso-admin', region_name=env.region)
         self.ssoinstancearn, self.ssoidstore = list_sso_instances(self.sso_session)
@@ -140,6 +142,10 @@ class AWSSSOStack(Stack):
                 new_perm_set.managed_policies = self.managedpolicies[index]
             elif self.managedpolicies[index] != "":
                 new_perm_set.managed_policies = [self.managedpolicies[index]]
+            if self.description[index] != "":
+                new_perm_set.description = self.description[index]
+            else:
+                new_perm_set.description = "-"
 
             self.permset = new_perm_set
             perm_sets[perm_name] = self.permset.attr_permission_set_arn

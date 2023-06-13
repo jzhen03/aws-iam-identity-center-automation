@@ -21,12 +21,16 @@
             },
             "customPolicy": {
               "type": "string"
+            },
+            "description": {
+              "type": "string"
             }
           },
           "required": [
             "permissionSetName",
             "managedPolicies",
-            "customPolicy"
+            "customPolicy",
+            "description"
           ]
         }
       ]
