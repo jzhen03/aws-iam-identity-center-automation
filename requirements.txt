@@ -1,5 +1,5 @@
 attrs
-aws-cdk-lib
+aws-cdk-lib>=2.83.1
 boto3
 botocore
 cattrs
