@@ -1,5 +1,5 @@
 import boto3
-from aws_cdk import Environment, Stack
+from aws_cdk import Environment, Stack, CfnTag
 from aws_cdk import aws_sso as sso
 from constructs import Construct
 import json
@@ -40,7 +40,8 @@ def get_permission_sets(permission_sets_file):
     managed_policy_list = []
     permission_set_name = []
     custom_policy_list = []
-    description = []
+    description_list = []
+    sessionDuration_list = []
     with open(permission_sets_file, "r") as perm_file:
         permission_sets = json.load(perm_file)
 
@@ -50,9 +51,10 @@ def get_permission_sets(permission_sets_file):
             permission_set_name.append(permset["permissionSetName"])
             managed_policy_list.append(permset["managedPolicies"])
             custom_policy_list.append(permset["customPolicy"])
-            description.append(permset["description"])
+            description_list.append(permset["description"])
+            sessionDuration_list.append(permset["sessionDuration"])
 
-    return permission_set_name, managed_policy_list, custom_policy_list, description
+    return permission_set_name, managed_policy_list, custom_policy_list, description_list, sessionDuration_list
 
 
 def list_sso_instances(sso_session):
@@ -117,7 +119,7 @@ class AWSSSOStack(Stack):
                  env: Environment, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        self.permnames, self.managedpolicies, self.custompolicies, self.description = get_permission_sets(ssopermsets)
+        self.permnames, self.managedpolicies, self.custompolicies, self.description, self.sessionDuration = get_permission_sets(ssopermsets)
         self.session = boto3.Session(profile_name=profile)
         self.sso_session = self.session.client('sso-admin', region_name=env.region)
         self.ssoinstancearn, self.ssoidstore = list_sso_instances(self.sso_session)
@@ -125,7 +127,8 @@ class AWSSSOStack(Stack):
         perm_sets = {}
         index = 0
         for perm_name in self.permnames:
-            new_perm_set = sso.CfnPermissionSet(self, perm_name, instance_arn=self.ssoinstancearn, name=perm_name)
+            new_perm_set = sso.CfnPermissionSet(self, perm_name, instance_arn=self.ssoinstancearn, name=perm_name, \
+                                                tags=[CfnTag(key="Identity", value="sso-stack")])
             
             if self.custompolicies[index]:
                 with open('./inline_policies/' + self.custompolicies[index], 'r') as f:
@@ -142,11 +145,17 @@ class AWSSSOStack(Stack):
                 new_perm_set.managed_policies = self.managedpolicies[index]
             elif self.managedpolicies[index] != "":
                 new_perm_set.managed_policies = [self.managedpolicies[index]]
+            
             if self.description[index] != "":
                 new_perm_set.description = self.description[index]
             else:
                 new_perm_set.description = "-"
 
+            if self.sessionDuration[index] != "":
+                new_perm_set.session_duration = self.sessionDuration[index]
+            else:
+                new_perm_set.session_duration = "PT2H"
+            
             self.permset = new_perm_set
             perm_sets[perm_name] = self.permset.attr_permission_set_arn
             index += 1
@@ -165,6 +174,7 @@ class AWSSSOStack(Stack):
         except Exception as e:
             print(e)
 
+        # Create Assignments 
         self.permission_set_arns = perm_sets
         self.allocated = get_assign(ssoassigns, profile, self.ssoidstore)
         logger.debug(f"{self.allocated}")
