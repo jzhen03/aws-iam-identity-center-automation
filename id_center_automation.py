@@ -82,7 +82,7 @@ if __name__ == "__main__":
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir)
 
-            synth_cmd = "cdk synth -j --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + \
+            synth_cmd = "cdk synth -j -c permsets=" + args.permsets + " -c assignments=" + \
                         args.assignments +  " -c region=" + args.region + \
                         " -c profile=" + args.profile + " --profile " + args.profile + " > " + sso_stack
             # " -c accountID=" + args.mgmtacct +
@@ -95,13 +95,13 @@ if __name__ == "__main__":
                 logger.info(f"Failed to synth template for AWS IAM Identity Center permission sets")
 
             if args.deploy:
-                sso_deploy_cmd = "cdk deploy --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + \
+                sso_deploy_cmd = "cdk deploy -c permsets=" + args.permsets + " -c assignments=" + \
                                  args.assignments +  " -c region=" + args.region + \
                                  " -c profile=" + args.profile + " --profile " + args.profile
                 sso_deploy_resp = subprocess.run(sso_deploy_cmd, shell=True)
 
         if args.permsets and args.assignments and args.destroy:
-            cmd = "cdk destroy --ec2creds false -c permsets=" + args.permsets + " -c assignments=" + args.assignments \
+            cmd = "cdk destroy -c permsets=" + args.permsets + " -c assignments=" + args.assignments \
                   +  " -c region=" + args.region + " -c profile=" + args.profile \
                   + " --profile " + args.profile
             sso_response = subprocess.run(cmd, shell=True)
